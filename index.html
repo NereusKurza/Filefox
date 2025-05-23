@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>FileFox - Image Converter</title>
+
+  <!-- Google Material Icons -->
+  <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet" />
+  <!-- Custom Styles -->
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header>
+    <img id="logoPreview" src="Filefox.png" alt="FileFox Logo" />
+    <h1>FileFox</h1>
+    <p>
+      File Fox is a fast and user-friendly image converter that effortlessly transforms any images into high-quality PNG files.
+      Whether you're optimizing for transparency, quality, or compatibility, File Fox makes image conversion quick, simple, and reliable all with just a few clicks.
+    </p>
+  </header>
+
+  <div class="main"></div>
+
+  <div class="container">
+    <button class="add-btn" onclick="document.getElementById('fileInput').click()">
+      <span class="material-icons">folder_open</span> Add more
+    </button>
+    <input type="file" id="fileInput" multiple accept="image/*" style="display:none" />
+
+    <div id="fileList"></div>
+
+    <button class="convert-btn">
+      <span class="material-icons">autorenew</span> Convert
+    </button>
+  </div>
+
+<script>
+  const fileInput = document.getElementById("fileInput");
+  const fileList = document.getElementById("fileList");
+  const convertBtn = document.querySelector(".convert-btn");
+  const filesData = [];
+
+  // Check if running in Capacitor native environment
+  const isNative = window.Capacitor && window.Capacitor.isNativePlatform && window.Capacitor.isNativePlatform();
+
+  function isMobileView() {
+    return isNative;
+  }
+
+  function showToast(message) {
+    if (isNative) {
+      window.Capacitor.Plugins.Toast.show({ text: message });
+    } else {
+      alert(message);
+    }
+  }
+
+  fileInput.addEventListener("change", (event) => {
+    const selectedFiles = Array.from(event.target.files);
+    selectedFiles.forEach((file) => {
+      const id = crypto.randomUUID();
+      filesData.push({ id, file, format: "" });
+      createFileItem(file.name, id);
+    });
+    fileInput.value = ""; // Allow re-upload of same file
+  });
+
+  function createFileItem(fileName, id) {
+    const fileItem = document.createElement("div");
+    fileItem.className = "file-item";
+
+    fileItem.innerHTML = `
+      <div class="file-name">${fileName}</div>
+      <div class="file-controls">
+        <select class="format-select">
+          <option value="">Convert to</option>
+          <option value="png">PNG</option>
+          <option value="jpeg">JPG</option>
+          <option value="webp">WEBP</option>
+        </select>
+        <button class="remove-btn"><span class="material-icons">close</span></button>
+      </div>
+    `;
+
+    fileList.appendChild(fileItem);
+
+    fileItem.querySelector(".format-select").addEventListener("change", (e) => {
+      updateFormat(id, e.target.value);
+    });
+
+    fileItem.querySelector(".remove-btn").addEventListener("click", () => {
+      removeFileItem(id, fileItem);
+    });
+  }
+
+  function updateFormat(id, format) {
+    const fileObj = filesData.find(f => f.id === id);
+    if (fileObj) fileObj.format = format;
+  }
+
+  function removeFileItem(id, element) {
+    const index = filesData.findIndex(f => f.id === id);
+    if (index !== -1) filesData.splice(index, 1);
+    element.remove();
+  }
+
+  convertBtn.addEventListener("click", () => {
+    if (filesData.length === 0) {
+      showToast("Please add at least one image.");
+      return;
+    }
+
+    for (const { file, format } of filesData) {
+      if (!format) {
+        showToast(`Please select a format for "${file.name}"`);
+        return;
+      }
+
+      if (isMobileView()) {
+        convertAndSaveMobile(file, format);
+      } else {
+        convertAndDownloadPC(file, format);
+      }
+    }
+  });
+
+  async function convertAndSaveMobile(file, format) {
+    const reader = new FileReader();
+    reader.onload = async (e) => {
+      const img = new Image();
+      img.onload = async () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+
+        const base64 = canvas.toDataURL(`image/${format}`).split(',')[1];
+        const ext = format === "jpeg" ? "jpg" : format;
+        const filename = `${file.name.replace(/\.[^/.]+$/, "")}.${ext}`;
+
+        try {
+          await window.Capacitor.Plugins.Filesystem.writeFile({
+            path: filename,
+            data: base64,
+            directory: "DOCUMENTS",
+          });
+
+          await window.Capacitor.Plugins.Toast.show({ text: `${filename} saved to device!` });
+
+        } catch (err) {
+          showToast("Error saving file: " + err.message);
+        }
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  function convertAndDownloadPC(file, format) {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement("canvas");
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext("2d");
+        ctx.drawImage(img, 0, 0);
+
+        const ext = format === "jpeg" ? "jpg" : format;
+        const filename = `${file.name.replace(/\.[^/.]+$/, "")}.${ext}`;
+        const dataURL = canvas.toDataURL(`image/${format}`);
+
+        const link = document.createElement("a");
+        link.href = dataURL;
+        link.download = filename;
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  if (isNative) {
+    window.Capacitor.Plugins.App.addListener("backButton", () => {
+      window.Capacitor.Plugins.Toast.show({ text: "Press again to exit." });
+    });
+  }
+</script>
+</body>
+</html>

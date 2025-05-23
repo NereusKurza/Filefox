@@ -1,0 +1,203 @@
+/* Base */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+  background: #f5f5f5;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Header */
+header {
+  background: linear-gradient(135deg, #ff9800, #d76f1b);
+  color: white;
+  padding: 2rem 1rem 1.5rem;
+  text-align: center;
+  position: relative;
+  /* keep natural height */
+}
+
+header img {
+  width: 60px;
+}
+
+header h1 {
+  font-size: 2.5rem;
+  margin: 0.5rem 0 1rem;
+}
+
+header p {
+  max-width: 600px;
+  margin: 0 auto;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+/* Divider bar */
+.main {
+  background: #f0a84f;
+  height: 40px;
+  flex-shrink: 0; /* prevent shrinking */
+}
+
+/* Container Layout */
+.container {
+  position: relative;
+  flex: 1 1 auto; /* allow to grow and shrink */
+  display: flex;
+  flex-direction: column;
+  padding-top: 5rem; /* Space for Add Button */
+  padding-bottom: 5rem; /* Space for Convert Button */
+  max-width: 800px;
+  margin: 0 auto;
+  width: 100%;
+  box-sizing: border-box;
+  min-height: 0; /* very important for flex child scroll */
+}
+
+/* Add Button */
+.add-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: linear-gradient(135deg, #ff8c00, #d76f1b);
+  color: #fff;
+  border: none;
+  padding: 0.85rem 1.75rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  transition: background 0.4s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  min-width: 160px;
+  justify-content: center;
+  box-shadow: 0 6px 12px rgba(215, 111, 27, 0.4);
+  user-select: none;
+  z-index: 10;
+}
+
+.add-btn:hover {
+  background: linear-gradient(135deg, #ff9a1b, #bf5f15);
+  box-shadow: 0 10px 20px rgba(215, 111, 27, 0.6);
+  transform: scale(1.05);
+}
+
+/* Scrollable File List */
+#fileList {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding: 1rem;
+  box-sizing: border-box;
+  min-height: 0; /* very important for correct scrolling inside flex */
+}
+
+/* File Item */
+.file-item {
+  background: white;
+  padding: 1rem;
+  border-radius: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+}
+
+.file-name {
+  flex: 2;
+  font-size: 0.95rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* File Controls */
+.file-controls {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.file-controls select {
+  padding: 0.3rem 0.6rem;
+  font-size: 0.9rem;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+}
+
+/* Remove Button */
+.remove-btn {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: #d11a2a;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  transition: color 0.2s ease;
+}
+
+.remove-btn:hover {
+  color: #b3131f;
+}
+
+/* Convert Button */
+.convert-btn {
+  position: fixed;
+  bottom: 1rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(135deg, #ff8c00, #d76f1b);
+  color: #fff;
+  border: none;
+  padding: 0.85rem 1.75rem;
+  border-radius: 12px;
+  font-size: 1.1rem;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  cursor: pointer;
+  transition: background 0.4s ease, box-shadow 0.3s ease, transform 0.2s ease;
+  min-width: 160px;
+  justify-content: center;
+  box-shadow: 0 6px 12px rgba(215, 111, 27, 0.4);
+  user-select: none;
+  z-index: 999;
+}
+
+.convert-btn:hover {
+  background: linear-gradient(135deg, #ff9a1b, #bf5f15);
+  box-shadow: 0 10px 20px rgba(215, 111, 27, 0.6);
+  transform: translateX(-50%) scale(1.05);
+}
+
+/* Responsive (Mobile) */
+@media (max-width: 768px) {
+  .file-item {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .file-controls {
+    margin-top: 0.5rem;
+    width: 100%;
+    justify-content: space-between;
+  }
+
+  .file-controls select {
+    flex: 1;
+  }
+}
+
+/* Logo Preview Styling */
+#logoPreview {
+  width: 100px;
+  height: 100px;
+  object-fit: contain;
+  cursor: default;
+}
